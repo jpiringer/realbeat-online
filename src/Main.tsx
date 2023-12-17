@@ -1,5 +1,8 @@
 import React, { Component, ChangeEvent } from 'react'
-import { Col, Form, ListGroup } from 'react-bootstrap'
+import { Form } from 'react-bootstrap'
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 
 import Button from 'react-bootstrap/Button'
 import Modal from 'react-bootstrap/Modal'
@@ -8,8 +11,10 @@ import Offcanvas from 'react-bootstrap/Offcanvas'
 import { Project } from "./Project"
 import ProjectItem from "./models/ProjectItem"
 
-import { ProjectList } from "./ProjectList";
-import { Info } from "./Info";
+import { ProjectList } from "./ProjectList"
+import { Info } from "./Info"
+import { TrackView } from "./TrackView"
+import { Track } from "./Track"
 import { db } from "./models/db"
 
 type ExportType = "WAV" | "JSON"
@@ -24,6 +29,7 @@ interface RealbeatState {
   playing: boolean
   selectedProjectNr: number
   currentProject?: Project
+  tracks: Track[]
 }
  
 interface RealbeatProps {
@@ -98,25 +104,28 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
       showInfo: false,
       selectedProjectNr: -1,
       currentProject: undefined,
-      exportType: "WAV"
-    };
+      exportType: "WAV",
+      tracks: []
+    }
 
     this.showExport = this.showExport.bind(this)
     this.hideExport = this.hideExport.bind(this)
-    this.keyDown = this.keyDown.bind(this);
-    this.play = this.play.bind(this);
-    this.hideClearAlert = this.hideClearAlert.bind(this);
-    this.showClearAlert = this.showClearAlert.bind(this);
-    this.showSettings = this.showSettings.bind(this);
-    this.handleCloseSettings = this.handleCloseSettings.bind(this);
-    this.onExportTypeChange = this.onExportTypeChange.bind(this);
-    this.handleBeforeUnload = this.handleBeforeUnload.bind(this);
-    this.makeNewProject = this.makeNewProject.bind(this);
-    this.makeNewProject = this.makeNewProject.bind(this);
-    this.onProjectNameChange = this.onProjectNameChange.bind(this);
-    this.showProjectManager = this.showProjectManager.bind(this);
-    this.hideProjectManager = this.hideProjectManager.bind(this);
+    this.keyDown = this.keyDown.bind(this)
+    this.play = this.play.bind(this)
+    this.hideClearAlert = this.hideClearAlert.bind(this)
+    this.showClearAlert = this.showClearAlert.bind(this)
+    this.showSettings = this.showSettings.bind(this)
+    this.handleCloseSettings = this.handleCloseSettings.bind(this)
+    this.onExportTypeChange = this.onExportTypeChange.bind(this)
+    this.handleBeforeUnload = this.handleBeforeUnload.bind(this)
+    this.makeNewProject = this.makeNewProject.bind(this)
+    this.makeNewProject = this.makeNewProject.bind(this)
+    this.onProjectNameChange = this.onProjectNameChange.bind(this)
+    this.showProjectManager = this.showProjectManager.bind(this)
+    this.hideProjectManager = this.hideProjectManager.bind(this)
     this.doExport = this.doExport.bind(this)
+    this.addTrack = this.addTrack.bind(this)
+    this.updateTracks = this.updateTracks.bind(this)
 
     window.addEventListener("beforeunload", this.handleBeforeUnload);
   }
@@ -147,6 +156,17 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
 
   play() {
     this.setState({playing: !this.state.playing});
+  }
+
+  addTrack() {
+    var tracks = this.state.tracks
+
+    tracks.push(new Track(this.updateTracks))
+    this.setState({tracks: tracks})
+  }
+
+  updateTracks() {
+    this.setState({tracks: this.state.tracks})
   }
 
   noModals() {
@@ -309,23 +329,21 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
     );
   }
 
-  info() {
+  tracks() {
     return (
-      <Modal show={this.state.showInfo} onHide={() => {this.setState({showInfo: false})}} animation={true}>
-        <Modal.Header closeButton className="blackmodal" closeVariant="white">
-          <Modal.Title>Info</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="blackmodal">
-          <p>This is a cute app sound by jörg piringer</p>
-          <p>check out my website: <a href="https://joerg.piringer.net">https://joerg.piringer.net</a></p>
-          <p>or fork this app on github: <a href="https://github.com/jpiringer/realbeat-online">https://github.com/jpiringer/stopmotion</a></p>
-        </Modal.Body>
-        <Modal.Footer className="blackmodal">
-          <Button variant="primary" onClick={() => {this.setState({showInfo: false})}}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <div className="tracks">
+        <Container>
+          <Row>
+            <Col>
+              <Button variant="outline-success" onClick={this.addTrack}><i className="bi bi-plus-lg"></i></Button>{' '}
+              <Button variant="outline-success" onClick={this.play}>{this.state.playing ? <i className="bi bi-stop"></i> : <i className="bi bi-play"></i>}</Button>{' '}
+            </Col>
+          </Row>
+        </Container>
+        { this.state.tracks.map((track: Track, index: number) => {
+          return <TrackView track={track} />
+        })}
+      </div>
     )
   }
 
@@ -337,15 +355,13 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
         <div className="heading">
           <span className="projectTitle">{ this.getCurrentProject() === undefined ? "please create or load a project!" : this.getCurrentProject()!.getTitle() }</span>
           { this.getCurrentProject() !== undefined && <Button variant="outline-danger" onClick={this.showSettings}><i className="bi bi-gear"></i></Button> }{' '} 
-        </div>
-        <br />
-        <Button variant="outline-success" onClick={this.play}>{this.state.playing ? <i className="bi bi-stop"></i> : <i className="bi bi-play"></i>}</Button>{' '}
-        <br />
-        <div>
           <Button variant="outline-success" onClick={this.showExport}><i className="bi bi-box-arrow-down"></i></Button>{' '}
           <Button variant="outline-success" onClick={this.showProjectManager}>Manage Projects</Button>{' '}
           <Button variant="outline-success" onClick={() => {this.setState({showInfo: true})}} ><i className="bi bi-info-circle"></i></Button>
         </div>
+        
+        { this.getCurrentProject() !== undefined && this.tracks() }
+
         { this.export() }
         { this.projectManager() }
         <Info show={this.state.showInfo} onHide={() => {this.setState({showInfo: false})}} />
