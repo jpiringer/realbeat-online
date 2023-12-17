@@ -2,6 +2,7 @@
   "name": "realbeat",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://joerg.piringer.net/realbeatOnline",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -11,7 +12,10 @@
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "boostrap": "^2.0.0",
+    "bootstrap": "^5.3.2",
+    "bootstrap-icons": "^1.11.2",
     "dexie": "^3.2.4",
+    "dexie-react-hooks": "^1.1.7",
     "react": "^18.2.0",
     "react-bootstrap": "^2.9.1",
     "react-bootstrap-icons": "^1.10.3",
