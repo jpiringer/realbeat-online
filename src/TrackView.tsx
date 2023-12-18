@@ -1,11 +1,12 @@
 import React, { Component, ChangeEvent } from 'react'
-import { Form } from 'react-bootstrap'
+import { Form, Dropdown, Button } from 'react-bootstrap'
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 
 import WaveForm from './WaveForm'
 import { Track } from "./Track"
+import { CustomToggle } from './CustomToggle';
 
 const sliderMaxValue = 10000
 
@@ -18,6 +19,7 @@ interface TrackViewState {
  
 interface TrackViewProps {
 	track: Track
+	onDelete: (track: Track) => void
 }
 
 export class TrackView extends Component<TrackViewProps, TrackViewState> {
@@ -69,7 +71,7 @@ export class TrackView extends Component<TrackViewProps, TrackViewState> {
 	            <Form.Control className="track-title" type="input" value={this.props.track.title} onChange={this.onTrackNameChange}/>
 						</Col>
 						<Col>
-							<button className="track-button track-button-white"><i className="bi bi-x-circle-fill"></i></button>
+							<button className="track-button track-button-white" onClick={() => {this.props.onDelete(this.props.track)}}><i className="bi bi-x-circle-fill"></i></button>
 						</Col>
 					</Row>
 				</Container>
@@ -113,7 +115,21 @@ export class TrackView extends Component<TrackViewProps, TrackViewState> {
 								<button className="track-button" onClick={() => {this.props.track.reverse()}}><i className="bi bi-arrow-left"></i></button>
 							</Row>
 							<Row>
-								<button className="track-button"><i className="bi bi-gear"></i></button>
+								<Dropdown>
+									<Dropdown.Toggle as={CustomToggle} id="dropdown-basic">
+										<i className="bi bi-gear"></i>
+									</Dropdown.Toggle>
+
+									<Dropdown.Menu>
+										<Dropdown.Item href="#/action-1"><i className="bi bi-lightning"></i> Test</Dropdown.Item>
+										<Dropdown.Item href="#/action-2"><i className="bi bi-arrows-collapse-vertical"></i> Trim</Dropdown.Item>
+										<Dropdown.Item href="#/action-3"><i className="bi bi-graph-down"></i> Fade Out</Dropdown.Item>
+										<Dropdown.Item href="#/action-4"><i className="bi bi-box"></i> Reverb</Dropdown.Item>
+										<Dropdown.Item href="#/action-5"><i className="bi bi-wind"></i> Distortion</Dropdown.Item>
+										<Dropdown.Item href="#/action-6"><i className="bi bi-shift"></i> Louder</Dropdown.Item>
+										<Dropdown.Item href="#/action-7"><i className="bi bi-chat-text"></i> Speak</Dropdown.Item>
+									</Dropdown.Menu>
+								</Dropdown>
 							</Row>
 							<Row>
 								<button className="track-button"><i className="bi bi-chat-text"></i></button>

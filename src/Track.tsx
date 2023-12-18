@@ -1,4 +1,5 @@
 import TrackItem from "./models/TrackItem"
+import { db } from "./models/db"
 
 function generateTitle() {
 	return "new track"
@@ -18,9 +19,9 @@ export class Track implements TrackItem {
 	playing: boolean = false
 	recording: boolean = false
 
-	protected updater: () => void
+	protected updater: (track: Track) => void
 
-	constructor(updater: () => void) {
+	constructor(updater: (track: Track) => void) {
 		this.updater = updater
 
 		this.title = generateTitle()
@@ -37,13 +38,23 @@ export class Track implements TrackItem {
 		return newTrack
 	}
 
-	setUpdater(updater: () => void) {
+	setFromTrackItem(trackItem: TrackItem) {
+		this.id = trackItem.id!
+		this.projectId = trackItem.projectId
+  	this.title = trackItem.title
+		this.audio = trackItem.audio
+		this.looped = trackItem.looped
+		this.pitch = trackItem.pitch
+		this.volume = trackItem.volume
+	}
+
+	setUpdater(updater: (track: Track) => void) {
 		this.updater = updater
 	}
 
 	updateState() {
-		//db.updateProject(this)
-		this.updater()
+    db.updateTrack(this)
+		this.updater(this)
 	}
 
 	// id
@@ -91,6 +102,11 @@ export class Track implements TrackItem {
 
 	getVolume() {
 		return this.volume
+	}
+
+	// audio
+	getAudio() {
+		return this.audio
 	}
 
 	// actions
