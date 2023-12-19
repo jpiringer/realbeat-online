@@ -5,6 +5,7 @@ import nouns from "./Nouns"
 import { db } from "./models/db"
 import ProjectItem from "./models/ProjectItem"
 import { Track } from "./Track"
+import { soundEngine } from "./sound/SoundEngine"
 
 const getRandomWord = (array: string[]) => {
   return array[Math.floor(Math.random() * (array.length - 1))];
@@ -18,6 +19,7 @@ export class Project implements ProjectItem {
 	public id: number = -1
 
 	title: string
+  volume: number
 	trackIds: number[] = []
 
 	protected updater: () => void
@@ -26,6 +28,7 @@ export class Project implements ProjectItem {
 		this.updater = updater
 
 		this.title = generateTitle()
+		this.volume = 0.75
 
 		db.addProject(this).then((value: number) => {this.id = value}, (error) => {})
 	}
@@ -36,6 +39,7 @@ export class Project implements ProjectItem {
 		newProject.id = this.id
 		newProject.title = this.title
 		newProject.trackIds = this.trackIds
+		newProject.volume = this.volume
 		
 		return newProject
 	}
@@ -69,6 +73,7 @@ export class Project implements ProjectItem {
 			track.id = trackId
 			this.addTrackId(trackId)
 			this.updateState()
+			track.initSound()
 		})	
 	}
 
@@ -85,6 +90,7 @@ export class Project implements ProjectItem {
 		this.trackIds = this.trackIds.filter((id: number, index: number) => {
 			return id !== track.getId()
 		})
+		track.stopSound()
 	}
 
 	async loadTracks() {
@@ -101,6 +107,24 @@ export class Project implements ProjectItem {
 	getTitle() {
 		return this.title
 	}
+
+	// volume
+
+	updateVolume() {
+		soundEngine.setMainVolume(this.volume)
+	}
+
+	setVolume(volume: number) {
+		this.volume = volume
+		this.updateState()
+		soundEngine.setMainVolume(volume)
+	}
+
+	getVolume() {
+		return this.volume
+	}
+
+	// export
 
 	exportToJSON() {
 		var json = {

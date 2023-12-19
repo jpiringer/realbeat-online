@@ -16,6 +16,9 @@ import { Info } from "./Info"
 import { TrackView } from "./TrackView"
 import { Track } from "./Track"
 import { db } from "./models/db"
+import { soundEngine } from './sound/SoundEngine';
+
+const sliderMaxValue = 10000
 
 type ExportType = "WAV" | "JSON"
 
@@ -60,15 +63,20 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
   }
 
   openProjectNr(projectIndex: number) {
+    soundEngine.closeAll()
+
     db.getProjects().then(
       (projects: ProjectItem[]) => {
         let project = projects[this.state.selectedProjectNr] as Project
         project.setUpdater(() => {this.updateProject()})
         this.setState({currentProject: project})
+        soundEngine.setMainVolume(project.getVolume())
+
         project.loadTracks().then((tracks) => {
           this.setState({tracks: tracks.map((trackItem) => {
             let track = new Track(this.updateTrack)
             track.setFromTrackItem(trackItem)
+            track.initSound()
 
             return track
           })})
@@ -88,6 +96,7 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
   makeNewProject() {
     var newProject = this.createNewProject()
 
+    soundEngine.closeAll()
     this.setState({currentProject: newProject, tracks: []})
   }
 
@@ -136,6 +145,7 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
     this.updateTrack = this.updateTrack.bind(this)
     this.deleteTrack = this.deleteTrack.bind(this)
     this.duplicateTrack = this.duplicateTrack.bind(this)
+    this.onChangeMainVolume = this.onChangeMainVolume.bind(this)
 
     window.addEventListener("beforeunload", this.handleBeforeUnload);
   }
@@ -337,6 +347,10 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
 
   }
 
+  onChangeMainVolume(event: ChangeEvent<HTMLInputElement>) {
+		this.getCurrentProject()!.setVolume(event.target.valueAsNumber / sliderMaxValue)
+	}
+
   export() {
     return (
       <Modal show={this.state.showExport} onHide={this.hideExport} animation={true}>
@@ -373,10 +387,14 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
               <Button variant="outline-success" onClick={this.addTrack}><i className="bi bi-plus-lg"></i></Button>{' '}
               <Button variant="outline-success" onClick={this.play}>{this.state.playing ? <i className="bi bi-stop"></i> : <i className="bi bi-play"></i>}</Button>{' '}
             </Col>
+            <Col>
+              <Form.Label>Volume</Form.Label>
+              <Form.Range min={0} max={sliderMaxValue} value={this.getCurrentProject()!.getVolume()*sliderMaxValue} onChange={this.onChangeMainVolume}/>
+            </Col>
           </Row>
         </Container>
         { this.state.tracks.map((track: Track, index: number) => {
-          return <TrackView track={track} onDelete={this.deleteTrack} onCopy={this.duplicateTrack}/>
+          return <TrackView key={index} track={track} onDelete={this.deleteTrack} onCopy={this.duplicateTrack}/>
         })}
       </div>
     )

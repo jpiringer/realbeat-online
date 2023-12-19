@@ -1,6 +1,7 @@
 import TrackItem from "./models/TrackItem"
 import { Looper } from "./sound/Looper"
 import { db } from "./models/db"
+import { soundEngine } from "./sound/SoundEngine"
 
 function generateTitle() {
 	return "new track"
@@ -15,9 +16,9 @@ export class Track implements TrackItem {
 	looped: boolean = true
 	pitch: number = 0.5
 	volume: number = 1
+	playing: boolean = false
 
 	// non persistent
-	playing: boolean = false
 	recording: boolean = false
 
 	protected looper : Looper | undefined
@@ -50,6 +51,7 @@ export class Track implements TrackItem {
 		track.looped = this.getLooped()
 		track.pitch = this.getPitch()
 		track.volume = this.getVolume()
+		track.playing = this.isPlaying()
 
 		return track
 	}
@@ -62,6 +64,7 @@ export class Track implements TrackItem {
 		this.looped = trackItem.looped
 		this.pitch = trackItem.pitch
 		this.volume = trackItem.volume
+		this.playing = trackItem.playing
 	}
 
 	setUpdater(updater: (track: Track) => void) {
@@ -71,6 +74,18 @@ export class Track implements TrackItem {
 	updateState() {
     db.updateTrack(this)
 		this.updater(this)
+	}
+
+	// sound
+	initSound() {
+		this.looper = soundEngine.createLooper(this)
+	}
+
+	stopSound() {
+		if (this.looper) {
+			soundEngine.destroyLooper(this.looper)
+			this.looper = undefined
+		}
 	}
 
 	// id
@@ -128,20 +143,41 @@ export class Track implements TrackItem {
 		return this.audio
 	}
 
-	// actions
-	record() {
-		console.log(`record track "${this.title}""`)
+	// record
+	toggleRecord() {
+		if (this.recording) {
+			this.looper?.stopRecord()
+		}
+		else {
+			this.looper?.record()
+		}
+		this.recording = !this.recording
+		this.updateState()
+	}
+
+	isRecording() {
+		return this.recording
+	}
+
+	// play
+
+	isPlaying() {
+		return this.playing
 	}
 
 	play() {
-		console.log(`play track "${this.title}""`)
 		this.looper?.play()
+		this.playing = true
+		this.updateState()
 	}
 
 	stop() {
-		console.log(`stop track "${this.title}""`)
 		this.looper?.stop()
+		this.playing = false
+		this.updateState()
 	}
+
+	// actions
 
 	reverse() {
 		console.log(`reverse track "${this.title}""`)

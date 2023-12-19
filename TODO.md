@@ -16,6 +16,20 @@ undo / redo
 
 keyboard
 
+## later
+
+sequencer
+
+patterns
+
+record wav
+
+export wav
+
+export project
+
+import project
+
 ## DONE
 
 change title
@@ -25,3 +39,9 @@ save track
 delete track
 
 copy track
+
+- connect to soundengine
+
+general audio is working
+
+main volume

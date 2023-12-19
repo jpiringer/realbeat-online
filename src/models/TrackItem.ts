@@ -6,4 +6,5 @@ export default interface TrackItem {
 	looped: boolean
 	pitch: number
 	volume: number
+	playing: boolean
 }

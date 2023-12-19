@@ -80,14 +80,17 @@ export class TrackView extends Component<TrackViewProps, TrackViewState> {
 				<Container>
 					<Row>
 						<Col>
-							<button className="track-button track-button-red" onClick={() => {this.props.track.record()}}><i className="bi bi-record-fill"></i></button> {'  '}
+							<button className={"track-button "+(this.props.track.isRecording() ? "track-record-button-active": "track-button-red")} onClick={() => {this.props.track.toggleRecord()}}><i className="bi bi-record-fill"></i></button> {'  '}
 						</Col>
 						<Col>
 							<button className={"track-button"+(this.props.track.looped ? " track-button-red" : "")} onClick={this.onClickLoop}><i className="bi bi-repeat"></i></button>
 						</Col>
 						<Col>
-							<button className="track-button" onClick={() => {this.props.track.play()}}><i className="bi bi-play-fill"></i></button>
-							<button className="track-button" onClick={() => {this.props.track.stop()}}><i className="bi bi-stop-fill"></i></button>
+							{this.props.track.isPlaying() ? 
+								<button className="track-button" onClick={() => {this.props.track.stop()}}><i className="bi bi-stop-fill"></i></button>
+								:
+								<button className="track-button" onClick={() => {this.props.track.play()}}><i className="bi bi-play-fill"></i></button>
+							}
 						</Col>
 					</Row>
 					<Row>

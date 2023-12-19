@@ -107,6 +107,20 @@ label {
   color: red;
 }
 
+@keyframes recording {
+  0%   {color:red; scale: 1;} 
+  50%  {color:orange; scale: 1.4;}
+  100% {color:red; scale: 1;}
+}
+
+.track-record-button-active {
+  color: yellow;
+
+  animation-name: recording;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+
 .track-button-white {
   color: white;
   float: right;
