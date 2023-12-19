@@ -203,7 +203,6 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
 
   duplicateTrack(track: Track) {
     if (this.getCurrentProject() !== undefined) {
-   		console.log(`duplicate track "${track.title}""`)
       let newTrack = track.duplicate()
       let tracks = this.state.tracks
 

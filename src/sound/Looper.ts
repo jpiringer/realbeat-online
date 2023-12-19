@@ -1,5 +1,5 @@
 import { createDevice, Device, IPatcher, MessagePortType, MessageEvent, TimeNow, MillisecondTime } from "@rnbo/js"
-import patcher from "./export/patch.export.json"
+import patcher from "./export/looper.export.json"
 import { Track } from "../Track"
 
 export class Looper {
@@ -33,6 +33,15 @@ export class Looper {
 				if (track.isPlaying()) {
 					this.play()
 				}
+
+				const descriptions = this.device.dataBufferDescriptions;
+
+				console.log(descriptions)
+				// Each description will have a unique id, as well as a "file" or "url" key, depending on whether 
+				// the buffer references a local file or a remote URL
+				descriptions.forEach(desc => {
+						console.log(`Buffer with id "${desc.id}"`)
+				})
 
 				/*device.parameters.forEach(parameter => {
 					console.log(`parameter id: ${parameter.id} name: ${parameter.name} value: ${parameter.value} range: ${parameter.min}-${parameter.max}`)
