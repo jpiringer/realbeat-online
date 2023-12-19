@@ -62,9 +62,9 @@ export class RealbeatDB extends Dexie {
 
   // track
 
-  async addTrack(project: Project, track: Track) {
+  async addTrack(project: Project | undefined, track: Track) {
     const id = await this.tracks.add({
-      projectId: project.getId(),
+      projectId: project ? project.getId() : track.projectId,
       title: track.getTitle(),
 	    audio: track.getAudio(),
 	    looped: track.getLooped(),

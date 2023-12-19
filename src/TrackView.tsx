@@ -1,5 +1,5 @@
 import React, { Component, ChangeEvent } from 'react'
-import { Form, Dropdown, Button } from 'react-bootstrap'
+import { Form, Dropdown } from 'react-bootstrap'
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -20,6 +20,7 @@ interface TrackViewState {
 interface TrackViewProps {
 	track: Track
 	onDelete: (track: Track) => void
+	onCopy: (track: Track) => void
 }
 
 export class TrackView extends Component<TrackViewProps, TrackViewState> {
@@ -135,7 +136,7 @@ export class TrackView extends Component<TrackViewProps, TrackViewState> {
 								<button className="track-button"><i className="bi bi-chat-text"></i></button>
 							</Row>
 							<Row>
-								<button className="track-button"><i className="bi bi-copy"></i></button>
+								<button className="track-button" onClick={() => {this.props.onCopy(this.props.track)}}><i className="bi bi-copy"></i></button>
 							</Row>
 						</Col>
 					</Row>

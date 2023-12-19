@@ -1,4 +1,5 @@
 import TrackItem from "./models/TrackItem"
+import { Looper } from "./sound/Looper"
 import { db } from "./models/db"
 
 function generateTitle() {
@@ -8,16 +9,18 @@ function generateTitle() {
 export class Track implements TrackItem {
 	public id: number = -1
 
-	projectId: number = 0
+	projectId: number = -1
 	title: string = "untitled"
 	audio: number[] = []
-	looped: boolean = false
-	pitch: number = 1
+	looped: boolean = true
+	pitch: number = 0.5
 	volume: number = 1
 
 	// non persistent
 	playing: boolean = false
 	recording: boolean = false
+
+	protected looper : Looper | undefined
 
 	protected updater: (track: Track) => void
 
@@ -36,6 +39,19 @@ export class Track implements TrackItem {
 		newTrack.title = this.title
 		
 		return newTrack
+	}
+
+	duplicate() {
+		var track = new Track(this.updater)
+
+		track.projectId = this.projectId
+		track.title = this.getTitle()
+		track.audio = this.getAudio()
+		track.looped = this.getLooped()
+		track.pitch = this.getPitch()
+		track.volume = this.getVolume()
+
+		return track
 	}
 
 	setFromTrackItem(trackItem: TrackItem) {
@@ -77,6 +93,7 @@ export class Track implements TrackItem {
 	// looped
 	setLooped(looped: boolean) {
 		this.looped = looped
+		this.looper?.setLooped(looped)
 		this.updateState()
 	}
 
@@ -87,6 +104,7 @@ export class Track implements TrackItem {
 	// pitch 
 	setPitch(pitch: number) {
 		this.pitch = pitch
+		this.looper?.setPitch(pitch)
 		this.updateState()
 	}
 
@@ -97,6 +115,7 @@ export class Track implements TrackItem {
 	// volume
 	setVolume(volume: number) {
 		this.volume = volume
+		this.looper?.setVolume(volume)
 		this.updateState()
 	}
 
@@ -116,10 +135,12 @@ export class Track implements TrackItem {
 
 	play() {
 		console.log(`play track "${this.title}""`)
+		this.looper?.play()
 	}
 
 	stop() {
 		console.log(`stop track "${this.title}""`)
+		this.looper?.stop()
 	}
 
 	reverse() {

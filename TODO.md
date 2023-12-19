@@ -1,7 +1,5 @@
 # TODO
 
-copy track
-
 audio
 
 - record
@@ -25,3 +23,5 @@ change title
 save track
 
 delete track
+
+copy track

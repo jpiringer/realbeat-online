@@ -135,6 +135,7 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
     this.addTrack = this.addTrack.bind(this)
     this.updateTrack = this.updateTrack.bind(this)
     this.deleteTrack = this.deleteTrack.bind(this)
+    this.duplicateTrack = this.duplicateTrack.bind(this)
 
     window.addEventListener("beforeunload", this.handleBeforeUnload);
   }
@@ -182,7 +183,6 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
   }
 
   deleteTrack(track: Track) {
- 		console.log(`delete track "${track.title}""`)
     let tracks = this.state.tracks.filter((t: Track, index: number) => {
       return t.getId() !== track.getId()
     })
@@ -191,16 +191,17 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
     this.getCurrentProject()!.deleteTrack(track)
   }
 
-  duplicateTrack() {
-    /*if (this.getCurrentProject() !== undefined) {
-      let frames = this.state.frames
-      let frame = frames[this.state.selectedFrameIndex]
+  duplicateTrack(track: Track) {
+    if (this.getCurrentProject() !== undefined) {
+   		console.log(`duplicate track "${track.title}""`)
+      let newTrack = track.duplicate()
+      let tracks = this.state.tracks
 
-      frames.push(frame)
+      tracks.push(newTrack)
 
-      this.setState({frames: frames})
-      this.getCurrentProject()!.addFrame(frame)
-    }*/
+      this.setState({tracks: tracks})
+      this.getCurrentProject()!.addTrack(newTrack)
+    }
   }
 
   noModals() {
@@ -375,7 +376,7 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
           </Row>
         </Container>
         { this.state.tracks.map((track: Track, index: number) => {
-          return <TrackView track={track} onDelete={this.deleteTrack}/>
+          return <TrackView track={track} onDelete={this.deleteTrack} onCopy={this.duplicateTrack}/>
         })}
       </div>
     )
