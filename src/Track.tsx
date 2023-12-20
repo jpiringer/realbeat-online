@@ -171,10 +171,14 @@ export class Track implements TrackItem {
 		this.updateState()
 	}
 
-	stop() {
-		this.looper?.stop()
+	setStop() {
 		this.playing = false
 		this.updateState()
+	}
+
+	stop() {
+		this.looper?.stop()
+		this.setStop()
 	}
 
 	// actions

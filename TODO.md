@@ -16,6 +16,9 @@ undo / redo
 
 keyboard
 
+select audio in
+select audio in channel
+
 ## later
 
 sequencer
