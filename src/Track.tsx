@@ -20,6 +20,8 @@ export class Track implements TrackItem {
 
 	// non persistent
 	recording: boolean = false
+	wave: Float32Array
+	playPos: number = 0
 
 	protected looper : Looper | undefined
 
@@ -29,6 +31,7 @@ export class Track implements TrackItem {
 		this.updater = updater
 
 		this.title = generateTitle()
+		this.wave = new Float32Array(0)
 
 		//db.addProject(this).then((value: number) => {this.id = value}, (error) => {})
 	}
@@ -38,6 +41,7 @@ export class Track implements TrackItem {
 
 		newTrack.id = this.id
 		newTrack.title = this.title
+		newTrack.wave = this.wave
 		
 		return newTrack
 	}
@@ -52,6 +56,7 @@ export class Track implements TrackItem {
 		track.pitch = this.getPitch()
 		track.volume = this.getVolume()
 		track.playing = this.isPlaying()
+		track.wave = this.wave
 
 		return track
 	}
@@ -144,14 +149,21 @@ export class Track implements TrackItem {
 	}
 
 	// record
+
+	setStopRecord() {
+		this.recording = false
+		this.updateState()
+	}
+
 	toggleRecord() {
 		if (this.recording) {
 			this.looper?.stopRecord()
+			// this.recording will be set to false in setStopRecord
 		}
 		else {
+			this.recording = true
 			this.looper?.record()
 		}
-		this.recording = !this.recording
 		this.updateState()
 	}
 
@@ -181,9 +193,30 @@ export class Track implements TrackItem {
 		this.setStop()
 	}
 
+	// wave
+
+	setWaveForm(waveData: Float32Array, length: number, normalizeDiv: number) {
+		this.wave = new Float32Array(length)
+		for (let i = 0; i < length; i++) {
+			this.wave[i] = waveData[i] / normalizeDiv
+		}
+		this.updateState()
+	}
+
+	// playPos
+
+	setPlayPos(pp: number) {
+		this.playPos = pp
+	}
+
+	getPlayPos() {
+		return this.playPos
+	}
+
 	// actions
 
 	reverse() {
 		console.log(`reverse track "${this.title}""`)
+		this.looper?.reverse()
 	}
 }

@@ -7,6 +7,8 @@ import { Track } from "../Track"
 export class SoundEngine {
 	context: AudioContext
 	outputNode: GainNode
+	stream?: MediaStream
+	source?: MediaStreamAudioSourceNode
 
 	loopers: Looper[] = []
 
@@ -14,6 +16,15 @@ export class SoundEngine {
 		this.context = new AudioContext()
 
 		this.context.destination.disconnect()
+
+		// Prompt the user to use their microphone.
+		navigator.mediaDevices.getUserMedia({
+			audio: true,
+		}).then((stream) => {
+			this.stream = stream
+
+			this.source = this.context.createMediaStreamSource(this.stream)
+		});
 
 		// Create gain node and connect it to audio output
     this.outputNode = this.context.createGain();
@@ -33,11 +44,12 @@ export class SoundEngine {
 	}
 
 	createLooper(track: Track) {
-		let looper = new Looper(this.context, this.outputNode, track) 
+		let looper = new Looper(this.context, this.source, this.outputNode, track) 
 
 		this.loopers.push(looper)
 
 		return looper
+
 	}
 
 	destroyLooper(looper: Looper) {

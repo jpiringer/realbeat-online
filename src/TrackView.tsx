@@ -38,12 +38,40 @@ export class TrackView extends Component<TrackViewProps, TrackViewState> {
 		this.onClickLoop = this.onClickLoop.bind(this)
 		this.onChangePitch = this.onChangePitch.bind(this)
 		this.onChangeVolume = this.onChangeVolume.bind(this)
+		this.drawWave = this.drawWave.bind(this)
 	}
 
 	drawWave(context: CanvasRenderingContext2D | null, frameCount: number) {
 		if (context !== null) {
 			context.fillStyle = '#000000'
 			context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+
+			context.strokeStyle = '#DD0000'
+			context.lineWidth = 1
+			context.beginPath()
+			context.moveTo(0, context.canvas.height/2)
+			context.lineTo(context.canvas.width, context.canvas.height/2)
+
+			let wave = this.props.track.wave
+			let fact = wave.length / context.canvas.width
+			for (let x = 0; x < context.canvas.width; x++) {
+				let amplitude = Math.abs(wave[Math.floor(x*fact)])
+				let lineLength = amplitude * context.canvas.height
+
+				context.moveTo(x, (context.canvas.height - lineLength)/2)
+				context.lineTo(x, context.canvas.height - (context.canvas.height - lineLength)/2)
+			}
+			context.stroke()
+
+			if (this.props.track.isPlaying()) {
+				let xPlayPos = this.props.track.getPlayPos() * context.canvas.width
+				context.strokeStyle = '#FF0000'
+				context.lineWidth = 3
+				context.beginPath()
+				context.moveTo(xPlayPos, 0)
+				context.lineTo(xPlayPos, context.canvas.height)
+				context.stroke()
+			}
 		}
 	}
 

@@ -7,6 +7,7 @@ export class Looper {
 	//device: Device | undefined = undefined
 	context: AudioContext
 	outputNode: AudioNode
+	inputNode?: AudioNode
 	looperNode: AudioWorkletNode | undefined = undefined
 
 	protected pitch: number = 0.5
@@ -19,15 +20,24 @@ export class Looper {
 			case "stop":
 				this.track.setStop()
 				break
+			case "stopRecord":
+				this.track.setStopRecord()
+				this.track.setWaveForm(event.data.transfer[0], event.data.transfer[1], event.data.transfer[2])
+				console.log(event.data.transfer)
+				break
+			case "playPos":
+				this.track.setPlayPos(event.data.transfer[0])
+				break
 			default:
 				console.log(`[Node:handleMessage_] ${event.data.message} (${event.data.contextTimestamp})`)
 				break
 		}
 	}
 
-	constructor(context: AudioContext, outputNode: AudioNode, track: Track) {
+	constructor(context: AudioContext, inputNode: AudioNode|undefined, outputNode: AudioNode, track: Track) {
 		this.context = context	
 		this.outputNode = outputNode
+		this.inputNode = inputNode
 
 		this.handleProcessorMessage = this.handleProcessorMessage.bind(this);
 
@@ -41,6 +51,9 @@ export class Looper {
 			this.context.audioWorklet.addModule("realbeatOnline/LooperProcessor.js").then(() => {
 				try {
 					this.looperNode = new AudioWorkletNode(this.context, "LooperProcessor")
+					if (this.inputNode) {
+						this.inputNode.connect(this.looperNode)
+					}
 					this.looperNode.connect(this.outputNode)
 
 					this.looperNode.port.onmessage = this.handleProcessorMessage
@@ -139,24 +152,22 @@ export class Looper {
 	}
 
 	play(time?: number) {
-		//this.setParam("playing", 1, time)
 		this.looperNode?.port.postMessage({message: "play"})
-		//this.sendInport("in1", 1, time || TimeNow)
 	}
 
 	stop(time?: number) {
 		this.looperNode?.port.postMessage({message: "stop"})
-		//this.setParam("playing", 0, time)
-		//this.sendInport("in1", 0, time || TimeNow)
 	}
 
 	record() {
-		this.setParam("recording", 1)
-		//this.sendInport("in2", 1, TimeNow)
+		this.looperNode?.port.postMessage({message: "record"})
 	}
 
 	stopRecord() {
-		this.setParam("recording", 0)
-		//this.sendInport("in2", 0, TimeNow)
+		this.looperNode?.port.postMessage({message: "stopRecord"})
+	}
+
+	reverse() {
+		this.looperNode?.port.postMessage({message: "reverse"})
 	}
 }
