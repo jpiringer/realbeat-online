@@ -9,6 +9,7 @@ export class LooperProcessor extends AudioWorkletProcessor {
 			{name: 'volume', defaultValue: 0.75, minValue: 0, maxValue: 1},
 			{name: 'pitch', defaultValue: 0.5, minValue: 0, maxValue: 1},
 			{name: 'looped', defaultValue: 0, minValue: 0, maxValue: 1},
+			{name: 'mute', defaultValue: 0, minValue: 0, maxValue: 1},
 			{name: 'loopStart', defaultValue: 0, minValue: 0, maxValue: 1},
 			{name: 'loopEnd', defaultValue: 1, minValue: 0, maxValue: 1},
 		];
@@ -52,7 +53,14 @@ export class LooperProcessor extends AudioWorkletProcessor {
 	postWaveForm() {
 		this.port.postMessage({
 			message: 'stopRecord',
-			transfer: [this.buffer, this.recordPos, this.normalizeDiv]
+			transfer: [this.buffer, this.buffer.length, this.normalizeDiv]
+    });
+	}
+
+	postSelection(start, end) {
+		this.port.postMessage({
+			message: 'selection',
+			transfer: [start, end]
     });
 	}
 
@@ -79,6 +87,20 @@ export class LooperProcessor extends AudioWorkletProcessor {
 
 	reverse() {
 		this.buffer.reverse()
+		let selectionStart = this.loopStart / this.buffer.length
+		let selectionEnd = this.loopEnd / this.buffer.length
+		this.postWaveForm()
+		this.postSelection(1-selectionEnd,1-selectionStart)
+	}
+
+	trim() {
+		this.buffer = this.buffer.subarray(this.loopStart, this.loopEnd)
+		this.postWaveForm()
+		this.postSelection(0,1)
+	}
+
+	setWave(waveData) {
+		this.buffer = waveData
 		this.postWaveForm()
 	}
 
@@ -112,6 +134,12 @@ export class LooperProcessor extends AudioWorkletProcessor {
 			case "reverse":
 				this.reverse()
 				break
+			case "trim":
+				this.trim()
+				break
+			case "setWave":
+				this.setWave(event.data.transfer[0])
+				break
 			default:
 		    console.log(`unknown message [Processor:Received] ${event.data.message} (${event.data.contextTimestamp})`)
 				break
@@ -142,7 +170,11 @@ export class LooperProcessor extends AudioWorkletProcessor {
     const isVolumeConstant = volume.length === 1
 		const pitch = parameters.pitch
     const isPitchConstant = pitch.length === 1
-		const looped = parameters.looped
+		const looped = parameters.looped[0]
+		const mute = parameters.mute[0]
+
+		this.loopStart = parameters.loopStart[0] * this.buffer.length
+		this.loopEnd = parameters.loopEnd[0] * this.buffer.length
 
 		if (this.recording) {
 			if (inputs.length === 0 || inputs[0].length === 0) {
@@ -166,13 +198,20 @@ export class LooperProcessor extends AudioWorkletProcessor {
 			let advance = p * 2
 
 			if (this.playing) {
-				output.forEach((channel) => {
-					channel[i] = this.buffer[Math.floor(this.playPos)] * (isVolumeConstant ? volume[0] : volume[i]) / this.normalizeDiv
-				})
+				if (mute === 1) {
+					output.forEach((channel) => {
+						channel[i] = 0
+					})
+				}
+				else {
+					output.forEach((channel) => {
+						channel[i] = this.buffer[Math.floor(this.playPos)] * (isVolumeConstant ? volume[0] : volume[i]) / this.normalizeDiv
+					})
+				}
 				this.playPos = this.playPos + advance
 
 				if (this.playPos > this.loopEnd) {
-					if (looped[0] === 1) {
+					if (looped === 1) {
 						this.playPos = this.loopStart + this.playPos - this.loopEnd
 					}
 					else {

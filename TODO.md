@@ -1,17 +1,10 @@
 # TODO
 
-save wave data
-
 audio
 
-- clone loop data
-- set loop
-- display loop
 - fx
 - text to speech (if possible at all)
-- mute
 - interpolate
-- trim
 - ramp up / down at start and end of play
 - loop xfade?
 
@@ -65,3 +58,20 @@ something is wrong with the recording quality
 klick at the end or beginning of recording when looping
 
 - display playpos
+
+- set loop
+- display loop
+
+- trim
+
+- clone wave data
+
+save wave data
+
+save loop data
+
+- clone loop data
+
+- reset pitch
+
+- mute

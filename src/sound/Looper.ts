@@ -12,6 +12,7 @@ export class Looper {
 
 	protected pitch: number = 0.5
 	protected volume: number = 1
+	protected mute: boolean = false
 	protected looped: boolean = true
 	protected track: Track
 
@@ -23,10 +24,12 @@ export class Looper {
 			case "stopRecord":
 				this.track.setStopRecord()
 				this.track.setWaveForm(event.data.transfer[0], event.data.transfer[1], event.data.transfer[2])
-				console.log(event.data.transfer)
 				break
 			case "playPos":
 				this.track.setPlayPos(event.data.transfer[0])
+				break
+			case "selection":
+				this.track.select(event.data.transfer[0], event.data.transfer[1])
 				break
 			default:
 				console.log(`[Node:handleMessage_] ${event.data.message} (${event.data.contextTimestamp})`)
@@ -34,7 +37,7 @@ export class Looper {
 		}
 	}
 
-	constructor(context: AudioContext, inputNode: AudioNode|undefined, outputNode: AudioNode, track: Track) {
+	constructor(context: AudioContext, inputNode: AudioNode|undefined, outputNode: AudioNode, track: Track, waveData?: Float32Array) {
 		this.context = context	
 		this.outputNode = outputNode
 		this.inputNode = inputNode
@@ -42,10 +45,10 @@ export class Looper {
 		this.handleProcessorMessage = this.handleProcessorMessage.bind(this);
 
 		this.track = track
-		this.create(track)
+		this.create(track, waveData)
 	}
 
-	create(track: Track) {
+	create(track: Track, waveData?: Float32Array) {
 		try {
 			// LooperProcessor.js is in public folder
 			this.context.audioWorklet.addModule("realbeatOnline/LooperProcessor.js").then(() => {
@@ -58,9 +61,15 @@ export class Looper {
 
 					this.looperNode.port.onmessage = this.handleProcessorMessage
 
+					if (waveData) {
+						this.setWave(waveData)
+					}
+
 					this.setPitch(track.getPitch())
 					this.setVolume(track.getVolume())
+					this.setMute(track.getMute())
 					this.setLooped(track.getLooped())
+					this.select(track.getSelection().start, track.getSelection().end)
 					if (track.isPlaying()) {
 						this.play()
 					}
@@ -141,6 +150,12 @@ export class Looper {
 		this.setParam("volume", volume)
 	}
 
+	setMute(mute: boolean) {
+		console.log("Looper mute: "+mute)
+		this.mute = mute
+		this.setParam("mute", mute ? 1 : 0)
+	}
+
 	setPitch(pitch: number) {
 		this.pitch = pitch
 		this.setParam("pitch", pitch)
@@ -149,6 +164,16 @@ export class Looper {
 	setLooped(looped: boolean) {
 		this.looped = looped
 		this.setParam("looped", looped ? 1 : 0)
+	}
+
+	select(start: number, end: number) {
+		this.setParam("loopStart", start)
+		this.setParam("loopEnd", end)
+	}
+
+	/// sets the audio wavedata
+	setWave(waveData: Float32Array) {
+		this.looperNode?.port.postMessage({message: "setWave", transfer: [waveData]})
 	}
 
 	play(time?: number) {
@@ -169,5 +194,9 @@ export class Looper {
 
 	reverse() {
 		this.looperNode?.port.postMessage({message: "reverse"})
+	}
+
+	trim() {
+		this.looperNode?.port.postMessage({message: "trim"})
 	}
 }

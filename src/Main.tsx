@@ -59,7 +59,7 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
   }
 
   getCurrentProject() {
-    return this.state.currentProject //this.state.projects[this.state.currentProjectNr];
+    return this.state.currentProject
   }
 
   openProjectNr(projectIndex: number) {

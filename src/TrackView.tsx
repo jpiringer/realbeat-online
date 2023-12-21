@@ -39,6 +39,9 @@ export class TrackView extends Component<TrackViewProps, TrackViewState> {
 		this.onChangePitch = this.onChangePitch.bind(this)
 		this.onChangeVolume = this.onChangeVolume.bind(this)
 		this.drawWave = this.drawWave.bind(this)
+		this.onSelecting = this.onSelecting.bind(this)
+		this.onSelect = this.onSelect.bind(this)
+		this.onClickMute = this.onClickMute.bind(this)
 	}
 
 	drawWave(context: CanvasRenderingContext2D | null, frameCount: number) {
@@ -63,6 +66,18 @@ export class TrackView extends Component<TrackViewProps, TrackViewState> {
 			}
 			context.stroke()
 
+			let selection = this.props.track.getSelection()
+			context.fillStyle = 'rgba(150, 150, 50, 0.4)'
+
+			//context.fillRect(context.canvas.width*selection.start, 0, context.canvas.width*selection.end, context.canvas.height)
+			let selectionLineWidth = 3
+			context.lineWidth = selectionLineWidth
+			context.strokeStyle = '#FF0000'
+			context.beginPath()
+			context.roundRect(context.canvas.width*selection.start+selectionLineWidth/2, selectionLineWidth/2, context.canvas.width*selection.end-context.canvas.width*selection.start-selectionLineWidth, context.canvas.height-selectionLineWidth, [3])
+			context.fill()
+			context.stroke()
+
 			if (this.props.track.isPlaying()) {
 				let xPlayPos = this.props.track.getPlayPos() * context.canvas.width
 				context.strokeStyle = '#FF0000'
@@ -83,12 +98,24 @@ export class TrackView extends Component<TrackViewProps, TrackViewState> {
 		this.props.track.setLooped(!this.props.track.looped)
 	}
 
+	onClickMute() {
+		this.props.track.setMute(!this.props.track.getMute())
+	}
+
 	onChangePitch(event: ChangeEvent<HTMLInputElement>) {
 		this.props.track.setPitch(event.target.valueAsNumber / sliderMaxValue)
 	}
 
 	onChangeVolume(event: ChangeEvent<HTMLInputElement>) {
 		this.props.track.setVolume(event.target.valueAsNumber / sliderMaxValue)
+	}
+	
+	onSelecting(start: number, end: number) {
+		this.props.track.select(start, end)
+	}
+
+	onSelect(start: number, end: number) {
+		this.props.track.select(start, end)
 	}
 
 	render() {
@@ -128,6 +155,8 @@ export class TrackView extends Component<TrackViewProps, TrackViewState> {
 										width={220}
 										height={70} 
 										draw={this.drawWave} 
+										onSelecting={this.onSelecting}
+										onSelect={this.onSelect}
 										frameRate={30} 
 									/>
 								</Row>
@@ -135,10 +164,12 @@ export class TrackView extends Component<TrackViewProps, TrackViewState> {
 									<Col>								
 										<Form.Label>Pitch</Form.Label>
 										<Form.Range min={0} max={sliderMaxValue} value={this.props.track.pitch*sliderMaxValue} onChange={this.onChangePitch} />
+										<button className="track-button" onClick={() => {this.props.track.resetPitch()}}><i className="bi bi-arrow-bar-up"></i></button>
 									</Col>
 									<Col>								
 										<Form.Label>Volume</Form.Label>
 										<Form.Range min={0} max={sliderMaxValue} value={this.props.track.volume*sliderMaxValue} onChange={this.onChangeVolume}/>
+										<button className={"track-button"+(this.props.track.getMute() ? " track-button-red" : "")} onClick={this.onClickMute}><i className="bi bi-volume-mute"></i></button>
 									</Col>
 								</Row>
 						</Col>
@@ -154,7 +185,7 @@ export class TrackView extends Component<TrackViewProps, TrackViewState> {
 
 									<Dropdown.Menu>
 										<Dropdown.Item href="#/action-1"><i className="bi bi-lightning"></i> Test</Dropdown.Item>
-										<Dropdown.Item href="#/action-2"><i className="bi bi-arrows-collapse-vertical"></i> Trim</Dropdown.Item>
+										<Dropdown.Item href="#/action-2" onClick={() => {this.props.track.trim()}}><i className="bi bi-arrows-collapse-vertical"></i> Trim</Dropdown.Item>
 										<Dropdown.Item href="#/action-3"><i className="bi bi-graph-down"></i> Fade Out</Dropdown.Item>
 										<Dropdown.Item href="#/action-4"><i className="bi bi-box"></i> Reverb</Dropdown.Item>
 										<Dropdown.Item href="#/action-5"><i className="bi bi-wind"></i> Distortion</Dropdown.Item>

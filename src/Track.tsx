@@ -1,4 +1,4 @@
-import TrackItem from "./models/TrackItem"
+import TrackItem, { WaveSelection } from "./models/TrackItem"
 import { Looper } from "./sound/Looper"
 import { db } from "./models/db"
 import { soundEngine } from "./sound/SoundEngine"
@@ -12,15 +12,17 @@ export class Track implements TrackItem {
 
 	projectId: number = -1
 	title: string = "untitled"
-	audio: number[] = []
 	looped: boolean = true
 	pitch: number = 0.5
 	volume: number = 1
+	mute: boolean = false
 	playing: boolean = false
+	selection: WaveSelection
 
 	// non persistent
 	recording: boolean = false
 	wave: Float32Array
+	enqueueWave: boolean = false
 	playPos: number = 0
 
 	protected looper : Looper | undefined
@@ -32,8 +34,7 @@ export class Track implements TrackItem {
 
 		this.title = generateTitle()
 		this.wave = new Float32Array(0)
-
-		//db.addProject(this).then((value: number) => {this.id = value}, (error) => {})
+		this.selection = {start: 0, end: 1}
 	}
 
 	clone() {
@@ -41,7 +42,9 @@ export class Track implements TrackItem {
 
 		newTrack.id = this.id
 		newTrack.title = this.title
-		newTrack.wave = this.wave
+		newTrack.wave = this.wave.slice(0)
+		newTrack.selection = this.selection
+		newTrack.setWave(newTrack.wave)
 		
 		return newTrack
 	}
@@ -51,12 +54,14 @@ export class Track implements TrackItem {
 
 		track.projectId = this.projectId
 		track.title = this.getTitle()
-		track.audio = this.getAudio()
 		track.looped = this.getLooped()
 		track.pitch = this.getPitch()
 		track.volume = this.getVolume()
+		track.mute = this.getMute()
 		track.playing = this.isPlaying()
-		track.wave = this.wave
+		track.wave = this.wave.slice(0)
+		track.setWave(track.wave)
+		track.selection = this.getSelection()
 
 		return track
 	}
@@ -65,11 +70,15 @@ export class Track implements TrackItem {
 		this.id = trackItem.id!
 		this.projectId = trackItem.projectId
   	this.title = trackItem.title
-		this.audio = trackItem.audio
 		this.looped = trackItem.looped
 		this.pitch = trackItem.pitch
 		this.volume = trackItem.volume
+		this.mute = trackItem.mute
 		this.playing = trackItem.playing
+		this.selection = trackItem.selection
+
+		this.wave = trackItem.wave
+		this.setWave(trackItem.wave)
 	}
 
 	setUpdater(updater: (track: Track) => void) {
@@ -83,7 +92,7 @@ export class Track implements TrackItem {
 
 	// sound
 	initSound() {
-		this.looper = soundEngine.createLooper(this)
+		this.looper = soundEngine.createLooper(this, this.enqueueWave ? this.wave : undefined)
 	}
 
 	stopSound() {
@@ -128,6 +137,10 @@ export class Track implements TrackItem {
 		this.updateState()
 	}
 
+	resetPitch() {
+		this.setPitch(0.5)
+	}
+
 	getPitch() {
 		return this.pitch
 	}
@@ -143,9 +156,21 @@ export class Track implements TrackItem {
 		return this.volume
 	}
 
+	// mute
+
+	setMute(mute: boolean) {
+		this.mute = mute
+		this.looper?.setMute(mute)
+		this.updateState()
+	}
+
+	getMute() {
+		return this.mute
+	}
+
 	// audio
-	getAudio() {
-		return this.audio
+	getWave() {
+		return this.wave
 	}
 
 	// record
@@ -195,11 +220,22 @@ export class Track implements TrackItem {
 
 	// wave
 
+	/// sets the audio wavedata
+	setWave(waveData: Float32Array) {
+		if (this.looper) {
+			this.looper.setWave(waveData)
+		}
+		else {
+			this.enqueueWave = true
+		}
+	}
+
 	setWaveForm(waveData: Float32Array, length: number, normalizeDiv: number) {
 		this.wave = new Float32Array(length)
 		for (let i = 0; i < length; i++) {
 			this.wave[i] = waveData[i] / normalizeDiv
 		}
+		db.updateTrackWave(this)
 		this.updateState()
 	}
 
@@ -213,10 +249,25 @@ export class Track implements TrackItem {
 		return this.playPos
 	}
 
+	// selection
+
+	select(start: number, end: number) {
+		this.looper?.select(start, end)
+		this.selection = {start: start, end: end}
+		this.updateState()
+	}
+
+	getSelection(): WaveSelection {
+		return this.selection
+	}
+
 	// actions
 
 	reverse() {
-		console.log(`reverse track "${this.title}""`)
 		this.looper?.reverse()
+	}
+
+	trim() {
+		this.looper?.trim()
 	}
 }

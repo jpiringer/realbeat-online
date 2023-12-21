@@ -68,11 +68,13 @@ export class RealbeatDB extends Dexie {
     const id = await this.tracks.add({
       projectId: project ? project.getId() : track.projectId,
       title: track.getTitle(),
-	    audio: track.getAudio(),
 	    looped: track.getLooped(),
 	    pitch: track.getPitch(),
 	    volume: track.getVolume(),
-      playing: track.isPlaying()
+      mute: track.getMute(),
+      playing: track.isPlaying(),
+      selection: track.getSelection(),
+      wave: track.getWave()
     })
 
     return id
@@ -85,14 +87,16 @@ export class RealbeatDB extends Dexie {
 	    looped: track.getLooped(),
 	    pitch: track.getPitch(),
 	    volume: track.getVolume(),
-      playing: track.isPlaying()
+      mute: track.getMute(),
+      playing: track.isPlaying(),
+      selection: track.getSelection()
     })
   }
 
   /// update track audio online
-  async updateTrackAudio(track: Track) {
+  async updateTrackWave(track: Track) {
     await this.tracks.update(track.getId(), {
-	    audio: track.getAudio()
+	    wave: track.getWave()
     })
   }
 
