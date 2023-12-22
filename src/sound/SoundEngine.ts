@@ -1,9 +1,7 @@
 // sound engine for realbeat online
 
-import { createDevice, IPatcher, MessageEvent } from "@rnbo/js"
 import { Looper } from "./Looper"
 import { Track } from "../Track"
-import { WaveSelection } from "../models/TrackItem"
 
 export class SoundEngine {
 	context: AudioContext

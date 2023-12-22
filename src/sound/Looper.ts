@@ -1,10 +1,7 @@
-//import { createDevice, Device, IPatcher, MessagePortType, MessageEvent, TimeNow, MillisecondTime } from "@rnbo/js"
-//import * as RNBO from "@rnbo/js"
-//import patcher from "./export/looper.export.json"
 import { Track } from "../Track"
+import isDevelopment from "../dev"
 
 export class Looper {
-	//device: Device | undefined = undefined
 	context: AudioContext
 	outputNode: AudioNode
 	inputNode?: AudioNode
@@ -49,9 +46,11 @@ export class Looper {
 	}
 
 	create(track: Track, waveData?: Float32Array) {
+		let path = isDevelopment() ? "./realbeatOnline/LooperProcessor.js" : "LooperProcessor.js"
+
 		try {
 			// LooperProcessor.js is in public folder
-			this.context.audioWorklet.addModule("realbeatOnline/LooperProcessor.js").then(() => {
+			this.context.audioWorklet.addModule(path).then(() => {
 				try {
 					this.looperNode = new AudioWorkletNode(this.context, "LooperProcessor")
 					if (this.inputNode) {
@@ -85,51 +84,13 @@ export class Looper {
 		catch(err) {
 			console.log(`error audio node: ${err}`)
 		}
-
-		/*try {
-			createDevice({
-				patcher: patcher as unknown as IPatcher,
-				context: this.context
-			}).then((device: Device) => {
-				this.device = device
-				this.device.node.connect(this.outputNode)
-
-				this.setPitch(track.getPitch())
-				this.setVolume(track.getVolume())
-				this.setLooped(track.getLooped())
-				if (track.isPlaying()) {
-					this.play()
-				}
-
-				const descriptions = this.device.dataBufferDescriptions;
-
-				console.log(descriptions)
-				// Each description will have a unique id, as well as a "file" or "url" key, depending on whether 
-				// the buffer references a local file or a remote URL
-				descriptions.forEach(desc => {
-						console.log(`Buffer with id "${desc.id}"`)
-						console.log(desc)
-				})
-			})
-		}
-		catch(err) {
-			console.log(`error creating patcher: ${err}`)
-		}*/
 	}
 
 	destroy() {
 		this.looperNode?.disconnect()
-		//this.device?.node.disconnect()
 	}
 
 	// inport & param
-
-	/*sendInport(inportTag: string, value: number, time: MillisecondTime) {
-		if (this.device) {
-			let messageEvent = new MessageEvent(time, inportTag, [value])
-    	this.device.scheduleEvent(messageEvent)
-		}
-	}*/
 
 	setParam(name: string, value: number, time?: number) {
 		if (this.looperNode) {
@@ -137,10 +98,6 @@ export class Looper {
 
 			param?.setValueAtTime(value, time || this.context.currentTime)
 		}
-		/*if (this.device) {
-			const param = this.device.parametersById.get(name)
-			param.value = value
-		}*/
 	}
 
 	// properties

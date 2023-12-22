@@ -2,7 +2,7 @@
 
 audio
 
-- fx
+- fx (reverb, distortion, etc.)
 - text to speech (if possible at all)
 - interpolate
 - ramp up / down at start and end of play
@@ -10,10 +10,14 @@ audio
 
 undo / redo
 
+record audio
+
 keyboard
 
 select audio in
 select audio in channel
+
+favicon
 
 ## later
 

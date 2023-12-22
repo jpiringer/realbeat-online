@@ -1,4 +1,21 @@
-# Getting Started with Create React App
+# RealBeat-online
+
+this is the online version of my RealBeat-app i published for MacOS and iOS/iPad-OS.
+it can record loops and mix them.
+it is a very basic app i use for teaching short audio workshops.
+
+the basic functionality is already implemented with React & Typescript.
+it uses the WebAudio API for audio.
+
+there's still a lot to to do:
+
+- audio quality
+- a sequencer (like in the mac version)
+- export project
+- record a performance and export it
+
+if you want to see it in action, go here:
+<https://joerg.piringer.net/realbeatOnline/>
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

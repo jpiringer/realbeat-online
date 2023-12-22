@@ -184,7 +184,7 @@ export class TrackView extends Component<TrackViewProps, TrackViewState> {
 									</Dropdown.Toggle>
 
 									<Dropdown.Menu>
-										<Dropdown.Item href="#/action-1"><i className="bi bi-lightning"></i> Test</Dropdown.Item>
+										<Dropdown.Item href="#/action-1" onClick={() => {this.props.track.reverse()}}><i className="bi bi-arrow-left"></i> Reverse</Dropdown.Item>
 										<Dropdown.Item href="#/action-2" onClick={() => {this.props.track.trim()}}><i className="bi bi-arrows-collapse-vertical"></i> Trim</Dropdown.Item>
 										<Dropdown.Item href="#/action-3"><i className="bi bi-graph-down"></i> Fade Out</Dropdown.Item>
 										<Dropdown.Item href="#/action-4"><i className="bi bi-box"></i> Reverb</Dropdown.Item>
