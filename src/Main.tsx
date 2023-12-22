@@ -417,6 +417,10 @@ export class Main extends Component<RealbeatProps, RealbeatState> {
         { this.export() }
         { this.projectManager() }
         <Info show={this.state.showInfo} onHide={() => {this.setState({showInfo: false})}} />
+
+        <div>
+          <p>this is a project by <a href="https://joerg.piringer.net/">jörg piringer</a></p>
+        </div>
       </div>
     );
   };
